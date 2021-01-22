@@ -112,8 +112,8 @@ export default {
         dataZoom: [
           {
             type: "inside",
-            start: 75,
-            end: 100,
+            start: 100,
+            // end: 100,
             minValueSpan: 1000 * 60 * 3,
             maxValueSpan: 5000 * 60,
           },
@@ -126,29 +126,42 @@ export default {
             hoverAnimation: false,
             markPoint: {
               data: [
-                [
-                  {
-                    symbol: "none",
-                    x: "95%",
-                    yAxis: data[data.length - 1].value[1],
-                  },
-                  {
-                    symbol: "circle",
-                    label: {
-                      normal: {
-                        position: "start",
-                        formatter: "实时数据\n{c}",
-                      },
-                    },
-                    name: "实时数据",
-                    value: data[data.length - 1].value[1],
-                    xAxis: data[data.length - 1].value[0],
-                    yAxis: data[data.length - 1].value[1],
-                  },
-                ],
+                // {
+                //   symbol: "none",
+                //   x: "95%",
+                //   yAxis: data[data.length - 1].value[1],
+                // },
+                {
+                  symbol: "none",
+                  // label: {
+                  //   normal: {
+                  //     position: "start",
+                  //     formatter: "实时数据\n{c}",
+                  //   },
+                  // },
+                  name: "实时数据",
+                  value: data[data.length - 1].value[1],
+                  xAxis: data[data.length - 1].value[0],
+                  yAxis: data[data.length - 1].value[1],
+                },
               ],
             },
             data: data,
+            areaStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                {
+                  offset: 0,
+                  color: "rgba(255, 230, 205, 1)",
+                },
+                {
+                  offset: 1,
+                  color: "rgba(255, 255, 255, 1)",
+                },
+              ]),
+            },
+            markLine: {
+              data: [],
+            },
             itemStyle: {
               color: "rgba(255, 115, 52, 1)",
             },
@@ -163,29 +176,19 @@ export default {
       // myChart.showLoading();
       myChart.setOption(option);
 
-      setInterval(function () {
-        // for (var i = 0; i < 5; i++) {
-        //   }
-        // data.shift();
-        data.push(randomData());
+      let flag = 0;
 
+      setInterval(function () {
+        flag++;
+        data.push(randomData());
+        // if (flag == 1) {
+        // }
         //alert(data[999].name)
         myChart.setOption({
           series: [
             {
               data: data,
-              areaStyle: {
-                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                  {
-                    offset: 0,
-                    color: "rgba(255, 230, 205, 1)",
-                  },
-                  {
-                    offset: 1,
-                    color: "rgba(255, 255, 255, 1)",
-                  },
-                ]),
-              },
+
               markLine: {
                 data: [
                   [
