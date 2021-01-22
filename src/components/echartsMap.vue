@@ -4,66 +4,84 @@
   </div>
 </template>
 <script>
-import echarts from "echarts";
+import * as echarts from "echarts";
 import moment from "moment";
 export default {
   data() {
     return {};
   },
   methods: {
-    initEcharts() {
-      // var base = +new Date(1968, 9, 3);
-      // let base = new Date(2020, 12, 1);
-      let base = +moment("2020-01-01 10:00:00").format("x");
-      var oneDay = 24 * 1000 * 60 * 60;
-      let onMin = 1000 * 15;
+    async initEcharts() {
+      function randomData() {
+        now = new Date(+now + oneDay);
+        value = value + Math.random() * 21 - 10;
+        var valueName =
+          now.getFullYear() +
+          "/" +
+          (now.getMonth() + 1) +
+          "/" +
+          now.getDate() +
+          " " +
+          (now.getHours() >= 10 ? now.getHours() : "0" + now.getHours()) +
+          ":" +
+          (now.getMinutes() >= 10 ? now.getMinutes() : "0" + now.getMinutes()) +
+          ":" +
+          (now.getSeconds() >= 10 ? now.getSeconds() : "0" + now.getSeconds());
 
-      var date = [];
-
-      var data = [];
-
-      for (var i = 1; i < 198; i++) {
-        // var now = new Date((base += oneDay));
-        date.push(moment(base).format("HH:mm:ss"));
-        base += onMin;
-        // date.push(
-        //   [now.getFullYear(), now.getMonth() + 1, now.getDate()].join("/")
-        // );
-        data.push(Math.round((Math.random() + 2) * (Math.random() * 100)));
+        return {
+          name: now.toString(),
+          value: [valueName, Math.round(value)],
+        };
       }
 
-      // var now = new Date((base += oneDay));
-      // now = new Date((base += oneDay));
-      // date.push(
-      //   [now.getFullYear(), now.getMonth() + 1, now.getDate()].join("/")
-      // );
-      base += onMin;
-      date.push(moment(base).format("HH:mm:ss"));
+      var data = [];
+      var now = +new Date();
+      var oneDay = 1000;
+      //var oneDay = 24 * 3600 * 1000;
+      var value = Math.random() * 1000;
+      for (var i = 0; i < 1000; i++) {
+        data.push(randomData());
+      }
+
+      // var temp = 59;
+      // let startValue =
 
       let option = {
+        title: {
+          text: "动态数据 + 时间坐标轴",
+        },
         tooltip: {
           trigger: "axis",
-          position: function (pt) {
-            return [pt[0], "10%"];
+          formatter: function (params) {
+            params = params[0];
+            var date = new Date(params.name);
+            return (
+              date.getDate() +
+              "/" +
+              (date.getMonth() + 1) +
+              "/" +
+              date.getFullYear() +
+              " : " +
+              params.value[1]
+            );
+          },
+          axisPointer: {
+            animation: false,
           },
         },
         xAxis: {
-          type: "category",
-          boundaryGap: false,
-          data: date,
+          type: "time",
+          minInterval: 1000 * 60,
+          splitLine: {
+            show: false,
+          },
           axisLine: {
             lineStyle: {
               color: "rgba(221, 221, 221, 1)",
               width: 1, //这里是为了突出显示加上的
             },
           },
-          axisLabel: {
-            interval: 3, // x轴数据显示设置；0：则显示所有的；1：隔一个显示一个
-            textStyle: {
-              color: "rgba(153, 153, 153, 1)",
-              fontSize: "21px",
-            },
-          },
+          triggerEvent: true,
         },
         yAxis: {
           type: "value",
@@ -94,76 +112,48 @@ export default {
         dataZoom: [
           {
             type: "inside",
-            start: 90,
+            start: 75,
             end: 100,
-            // startValue: 80, //数据窗口范围的起始数值
-            // endValue: 100,
+            minValueSpan: 1000 * 60 * 3,
+            maxValueSpan: 5000 * 60,
           },
         ],
         series: [
           {
             name: "模拟数据",
             type: "line",
-            smooth: true,
-            symbol: "none",
-            sampling: "average",
+            showSymbol: false,
+            hoverAnimation: false,
+            markPoint: {
+              data: [
+                [
+                  {
+                    symbol: "none",
+                    x: "95%",
+                    yAxis: data[data.length - 1].value[1],
+                  },
+                  {
+                    symbol: "circle",
+                    label: {
+                      normal: {
+                        position: "start",
+                        formatter: "实时数据\n{c}",
+                      },
+                    },
+                    name: "实时数据",
+                    value: data[data.length - 1].value[1],
+                    xAxis: data[data.length - 1].value[0],
+                    yAxis: data[data.length - 1].value[1],
+                  },
+                ],
+              ],
+            },
+            data: data,
             itemStyle: {
               color: "rgba(255, 115, 52, 1)",
             },
             lineStyle: {
               width: 1,
-            },
-            areaStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                {
-                  offset: 0,
-                  color: "rgba(255, 230, 205, 1)",
-                },
-                {
-                  offset: 1,
-                  color: "rgba(255, 255, 255, 1)",
-                },
-              ]),
-            },
-            data: data,
-            markLine: {
-              data: [
-                {
-                  type: "max",
-                  name: "最大值",
-                  itemStyle: {
-                    color: "#2E90D1",
-                  },
-                },
-                {
-                  0: {
-                    symbol:
-                      "image://data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/XBs/fNwfjZ0frl3/zy7////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAkAABAALAAAAAAQABAAAAVVICSOZGlCQAosJ6mu7fiyZeKqNKToQGDsM8hBADgUXoGAiqhSvp5QAnQKGIgUhwFUYLCVDFCrKUE1lBavAViFIDlTImbKC5Gm2hB0SlBCBMQiB0UjIQA7",
-                  },
-                  xAxis: "10:49:00",
-                  itemStyle: {
-                    color: "rgba(55, 201, 137, 1)",
-                  },
-                },
-                {
-                  xAxis: "10:49:30",
-                  itemStyle: {
-                    color: "rgba(243, 78, 78, 1)",
-                  },
-                },
-              ],
-            },
-            markPoint: {
-              data: [
-                {
-                  name: "一个点",
-                  // coord: [10, 20],
-                  yAxis: 90,
-                  itemStyle: {
-                    color: "pink",
-                  },
-                },
-              ],
             },
           },
         ],
@@ -173,34 +163,56 @@ export default {
       // myChart.showLoading();
       myChart.setOption(option);
 
-      option.dataZoom = [
-        {
-          type: "inside",
-        },
-      ];
+      setInterval(function () {
+        // for (var i = 0; i < 5; i++) {
+        //   }
+        // data.shift();
+        data.push(randomData());
 
-      let flag = 0;
-
-      setInterval(() => {
-        flag++;
-        // let now = (base += onMin);
-        date.push(moment(base).format("HH:mm:ss"));
-        data.push(Math.round((Math.random() + 2) * (Math.random() * 100)));
-        if (flag == 6) {
-          option.series[0].markLine.data[1].xAxis = "";
-          option.series[0].markLine.data[1].xAxis = moment(base).format(
-            "HH:mm:ss"
-          );
-        }
-        if (flag == 8) {
-          flag = 0;
-          option.series[0].markLine.data[2].xAxis = "";
-          option.series[0].markLine.data[2].xAxis = moment(base).format(
-            "HH:mm:ss"
-          );
-        }
-        myChart.setOption(option);
-        base += onMin;
+        //alert(data[999].name)
+        myChart.setOption({
+          series: [
+            {
+              data: data,
+              areaStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                  {
+                    offset: 0,
+                    color: "rgba(255, 230, 205, 1)",
+                  },
+                  {
+                    offset: 1,
+                    color: "rgba(255, 255, 255, 1)",
+                  },
+                ]),
+              },
+              markLine: {
+                data: [
+                  [
+                    {
+                      symbol: "none",
+                      x: "95%",
+                      yAxis: data[data.length - 1].value[1],
+                    },
+                    {
+                      symbol: "circle",
+                      label: {
+                        normal: {
+                          position: "start",
+                          formatter: "实时数据\n{c}",
+                        },
+                      },
+                      name: "实时数据",
+                      value: data[data.length - 1].value[1],
+                      xAxis: data[data.length - 1].value[0],
+                      yAxis: data[data.length - 1].value[1],
+                    },
+                  ],
+                ],
+              },
+            },
+          ],
+        });
       }, 1000);
     },
   },
