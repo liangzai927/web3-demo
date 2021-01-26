@@ -1,14 +1,18 @@
 <template>
   <div>
     <div class="nowEcharts" id="main"></div>
+    <img :src="timePic" alt="" />
   </div>
 </template>
 <script>
 import * as echarts from "echarts";
+import timePic from "../assets/编组 23@2x.png";
 import moment from "moment";
 export default {
   data() {
-    return {};
+    return {
+      timePic: require("../assets/编组 23@2x.png"),
+    };
   },
   methods: {
     async initEcharts() {
@@ -43,6 +47,10 @@ export default {
         data.push(randomData());
       }
 
+      let a = moment(
+        +moment(data[data.length - 1].value[0]).format("x") + 5000
+      ).format("YYYY/MM/DD HH:mm:ss");
+
       // var temp = 59;
       // let startValue =
 
@@ -71,6 +79,7 @@ export default {
         },
         xAxis: {
           type: "time",
+          boundaryGap: ["0", "3%"],
           minInterval: 1000 * 60,
           splitLine: {
             show: false,
@@ -85,7 +94,7 @@ export default {
         },
         yAxis: {
           type: "value",
-          boundaryGap: [0, "100%"],
+          // boundaryGap: [0, "100%"],
           position: "right",
           axisLine: {
             show: true,
@@ -121,6 +130,7 @@ export default {
         series: [
           {
             name: "模拟数据",
+            animation: false,
             type: "line",
             showSymbol: false,
             hoverAnimation: false,
@@ -160,7 +170,43 @@ export default {
               ]),
             },
             markLine: {
-              data: [],
+              symbol: ["none"],
+              data: [
+                {
+                  symbol: "image://" + timePic,
+                  symbolSize: 20,
+                  symbolRotate: 0,
+                  xAxis: a,
+                  label: "none",
+                  lineStyle: {
+                    color: "rgba(55, 201, 137, 1)",
+                    type: "solid",
+                    shadowBlur: {
+                      shadowColor: "rgba(0, 0, 0, 1)",
+                      shadowBlur: 100,
+                      shadowOffsetX: 10,
+                    },
+                  },
+                },
+                [
+                  {
+                    symbol: "none",
+                    x: "95%",
+                    yAxis: data[data.length - 1].value[1],
+                  },
+                  {
+                    symbol: "circle",
+                    label: {
+                      position: "start",
+                      formatter: "实时数据\n{c}",
+                    },
+                    name: "实时数据",
+                    value: data[data.length - 1].value[1],
+                    xAxis: data[data.length - 1].value[0],
+                    yAxis: data[data.length - 1].value[1],
+                  },
+                ],
+              ],
             },
             itemStyle: {
               color: "rgba(255, 115, 52, 1)",
@@ -178,44 +224,97 @@ export default {
 
       let flag = 0;
 
+      console.log(data[data.length - 1].value[0], a);
+
       setInterval(function () {
         flag++;
+        data.unshift();
         data.push(randomData());
-        // if (flag == 1) {
-        // }
-        //alert(data[999].name)
-        myChart.setOption({
-          series: [
-            {
-              data: data,
 
-              markLine: {
-                data: [
-                  [
-                    {
-                      symbol: "none",
-                      x: "95%",
-                      yAxis: data[data.length - 1].value[1],
-                    },
-                    {
-                      symbol: "circle",
-                      label: {
-                        normal: {
+        // option.series[0].data = data;
+        if (
+          moment(data[data.length - 1].value[0]).format("x") >
+          moment(a).format("x")
+        ) {
+          // option.series[0].markLine.data[0] = {};
+          myChart.setOption({
+            series: [
+              {
+                data: data,
+                markLine: {
+                  symbol: ["none"],
+                  data: [
+                    [
+                      {
+                        symbol: "none",
+                        x: "95%",
+                        yAxis: data[data.length - 1].value[1],
+                      },
+                      {
+                        symbol: "circle",
+                        label: {
                           position: "start",
                           formatter: "实时数据\n{c}",
                         },
+                        name: "实时数据",
+                        value: data[data.length - 1].value[1],
+                        xAxis: data[data.length - 1].value[0],
+                        yAxis: data[data.length - 1].value[1],
                       },
-                      name: "实时数据",
-                      value: data[data.length - 1].value[1],
-                      xAxis: data[data.length - 1].value[0],
-                      yAxis: data[data.length - 1].value[1],
-                    },
+                    ],
                   ],
-                ],
+                },
               },
-            },
-          ],
-        });
+            ],
+          });
+        } else {
+          myChart.setOption({
+            series: [
+              {
+                data: data,
+                markLine: {
+                  symbol: ["none"],
+                  data: [
+                    {
+                      symbol: "image://" + timePic,
+                      symbolSize: 20,
+                      symbolRotate: 0,
+                      xAxis: a,
+                      label: "none",
+                      lineStyle: {
+                        color: "rgba(55, 201, 137, 1)",
+                        type: "solid",
+                        shadowBlur: {
+                          shadowColor: "rgba(0, 0, 0, 1)",
+                          shadowBlur: 100,
+                          shadowOffsetX: 10,
+                        },
+                      },
+                    },
+                    [
+                      {
+                        symbol: "none",
+                        x: "95%",
+                        yAxis: data[data.length - 1].value[1],
+                      },
+                      {
+                        symbol: "circle",
+                        label: {
+                          position: "start",
+                          formatter: "实时数据\n{c}",
+                        },
+                        name: "实时数据",
+                        value: data[data.length - 1].value[1],
+                        xAxis: data[data.length - 1].value[0],
+                        yAxis: data[data.length - 1].value[1],
+                      },
+                    ],
+                  ],
+                },
+              },
+            ],
+          });
+        }
       }, 1000);
     },
   },
